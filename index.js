@@ -14,35 +14,28 @@ app.listen(port, () => console.log(`Example app listenint on port ${port}!`));
 
 const conn = require('./mysql');
 
-app.get("/", (req, res) => {
-    const sql = 'select * from user';
+// app.get("/", (req, res) => {
+//     const sql = 'select * from user';
 
-    conn.query(sql,
-        (err,results) => {
-            if(err){
-                console.log(err);
-                return res.status(400).end();
-            }
-            else {
-                
-                return res.status(200).json(results);
-            }
-        }
-    )
-})
+//     conn.query(sql,
+//         (err,results) => {
+//             if(err){
+//                 console.log(err);
+//                 return res.status(400).end();
+//             }
+//             else {
 
-
-// const userRouter = require('./routes/users');
-// const bookRouter = require('./routes/books');
-// const likeRouter = require('./routes/likes');
-// const cartRouter = require('./routes/carts');
-// const orderRouter = require('./routes/orders');
-// const categoryRouter = require('./routes/category');
+//                 return res.status(200).json(results);
+//             }
+//         }
+//     )
+// })
 
 
-// app.use("/users", userRouter);
-// app.use("/books", bookRouter);
-// app.use("/category", categoryRouter);
-// app.use("/likes", likeRouter);
-// app.use("/carts", cartRouter);
-// app.use("/orders", orderRouter);
+const userRouter = require('./routes/users');
+const petRouter = require('./routes/pets');
+const calendarRouter = require('./routes/calendar');
+
+app.use('/users', userRouter);
+app.use('/pets', petRouter);
+app.use('/calendar', calendarRouter);
