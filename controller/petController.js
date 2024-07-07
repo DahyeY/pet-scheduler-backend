@@ -91,9 +91,26 @@ const petInformation = async (req, res) => {
 
 }
 
-
+const addPet = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
+    const { name } = req.body;
+    sql = 'INSERT INTO pet(name, user_id) VALUES (?, ?)';
+    values = [name, user_id];
+    conn.query(sql, values,
+        (err, results) => {
+            if (err) {
+                console.log(err);
+                return res.status(StatusCodes.BAD_REQUEST).end();
+            }
+            else {
+                return res.status(StatusCodes.CREATED).json(results)
+            }
+        }
+    )
+}
 
 module.exports = {
     petInformation,
-
+    addPet
 };

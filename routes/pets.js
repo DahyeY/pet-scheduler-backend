@@ -1,5 +1,5 @@
 const express = require('express');
-const { petInformation } = require('../controller/petController');
+const { petInformation, addPet } = require('../controller/petController');
 const router = express.Router();
 
 router.use(express.json());
@@ -8,7 +8,7 @@ router.use(express.json());
 router.get('/', petInformation);
 
 // 반려동물 추가
-router.post('/', (req, res) => { res.send("반려동물 추가") });
+router.post('/', addPet);
 
 // 하루 목표 추가
 router.post('/todo', (req, res) => { res.send("하루 목표 추가") });
