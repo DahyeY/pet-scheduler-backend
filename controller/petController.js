@@ -110,7 +110,36 @@ const addPet = async (req, res) => {
     )
 }
 
+const addTodo = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
+
+    const { pet_id, title, color } = req.body;
+    if (await checkOwnership(pet_id, user_id)) {
+        let sql = "INSERT INTO daily_todo(pet_id, title, color) VALUES (?, ?, ?)";
+        let values = [pet_id, title, color];
+        conn.query(sql, values,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+                else {
+                    return res.status(StatusCodes.CREATED).json(results)
+                }
+            }
+        )
+    }
+    else {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "로그인한 유저의 반려동물이 아닙니다."
+        });
+    }
+
+}
+
 module.exports = {
     petInformation,
-    addPet
+    addPet,
+    addTodo
 };
