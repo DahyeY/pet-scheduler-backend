@@ -135,11 +135,40 @@ const addTodo = async (req, res) => {
             message: "로그인한 유저의 반려동물이 아닙니다."
         });
     }
-
 }
+
+const deleteTodo = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
+
+    const { pet_id, todo_id } = req.body;
+
+    if (await checkOwnership(pet_id, user_id)) {
+        let sql = "DELETE FROM daily_todo WHERE id = ?";
+        conn.query(sql, todo_id,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+                else {
+                    return res.status(StatusCodes.OK).json(results)
+                }
+            }
+        )
+    }
+    else {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "로그인한 유저의 반려동물이 아닙니다."
+        });
+    }
+}
+
+
 
 module.exports = {
     petInformation,
     addPet,
-    addTodo
+    addTodo,
+    deleteTodo
 };
