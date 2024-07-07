@@ -22,10 +22,8 @@ const getPets = (id) => {
     })
 
 }
-
+// 로그인한 유저의 반려동물인지 확인
 const checkOwnership = async (pet_id, user_id) => {
-    // 로그인한 유저의 반려동물인지 확인
-
     const pets = await getPets(user_id);
     if (pets.includes(pet_id)) {
         return true;
@@ -39,7 +37,7 @@ const petInformation = async (req, res) => {
     const user_id = authorization.id;
 
     const { pet_id } = req.body;
-    if (checkOwnership(pet_id, user_id)) {
+    if (await checkOwnership(pet_id, user_id)) {
         let response = {};
 
         sql = 'SELECT pet.name as name FROM pet WHERE pet.id  = ?'
