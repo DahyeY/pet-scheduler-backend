@@ -4,7 +4,7 @@ const port = 8080;
 
 // app.get("/", (req, res) => res.send("Index.js"));
 
-app.listen(port, () => console.log(`Example app listenint on port ${port}!`));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 
 // const dotenv = require('dotenv');
