@@ -1,5 +1,5 @@
 const express = require('express');
-const { main } = require('../controller/calendarController');
+const { main, daily } = require('../controller/calendarController');
 const router = express.Router();
 
 router.use(express.json());
@@ -8,7 +8,7 @@ router.use(express.json());
 router.get('/:pet_id', main);
 
 // 반려동물 별 날짜
-router.get('/:pet_id/:date', (req, res) => { res.send("날짜") });
+router.get('/:pet_id/daily', daily);
 
 // 일정 추가
 router.post('/:pet_id/:date/schedules', (req, res) => { res.send("일정 추가") });

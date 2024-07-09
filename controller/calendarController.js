@@ -58,7 +58,7 @@ const main = async (req, res) => {
         sql = `SELECT daily_todo_id, completed_at, color
                 FROM daily_todo_log dtl
                 JOIN daily_todo dt ON dt.id = dtl.daily_todo_id
-                WHERE dt.pet_id = ? and YEAR(dtl.completed_at) = ? and MONTH(dtl.completed_at) = ? `;
+                WHERE dt.pet_id = ? AND YEAR(dtl.completed_at) = ? AND MONTH(dtl.completed_at) = ? `;
         let values = [selected_pet_id, year, month];
         conn.query(sql, values,
             (err, results) => {
@@ -101,7 +101,84 @@ const main = async (req, res) => {
 }
 
 
+const daily = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
+    const selected_pet_id = parseInt(req.params.pet_id);
+    const date_string = req.body.date;
+    const date = new Date(date_string);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    console.log(year, month, day)
+
+
+    if (await checkOwnership(selected_pet_id, user_id)) {
+        let response = { date: `${month}월 ${day}일` };
+
+        sql = `SELECT 
+                    dt.title AS todo, 
+                    dt.color, 
+                    CASE
+                        WHEN dt.id IN (
+                            SELECT dtl.daily_todo_id 
+                            FROM daily_todo_log dtl 
+                            WHERE YEAR(dtl.completed_at) = ? 
+                            AND MONTH(dtl.completed_at) = ? 
+                            AND DAY(dtl.completed_at) = ?
+                        ) 
+                        THEN true
+                        ELSE false
+                    END AS completed
+                FROM 
+                    daily_todo dt
+                WHERE 
+                    dt.pet_id = ?`;
+        let values = [year, month, day, selected_pet_id];
+        conn.query(sql, values,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+                else {
+
+                    response.todos = results;
+                    console.log(response);
+
+                }
+            }
+        )
+
+        sql = `SELECT title as schedule_title, completed FROM schedule WHERE pet_id = ? AND date = ?`;
+        values = [selected_pet_id, date_string];
+        conn.query(sql, values,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+                else {
+                    response.schedule = results;
+                    console.log(response);
+
+                    return res.status(StatusCodes.OK).json(response);
+                }
+            }
+        )
+
+    }
+    else {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "로그인한 유저의 반려동물이 아닙니다."
+        });
+    }
+
+}
+
+
 
 module.exports = {
-    main
+    main,
+    daily
 };
