@@ -1,10 +1,11 @@
 const express = require('express');
+const { main } = require('../controller/calendarController');
 const router = express.Router();
 
 router.use(express.json());
 
 // 반려동물 별 기본 달력
-router.get('/:pet_id', (req, res) => { res.send("기본 달력") });
+router.get('/:pet_id', main);
 
 // 반려동물 별 날짜
 router.get('/:pet_id/:date', (req, res) => { res.send("날짜") });
