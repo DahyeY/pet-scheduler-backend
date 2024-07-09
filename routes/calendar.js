@@ -1,5 +1,5 @@
 const express = require('express');
-const { main, daily, addSchedule, deleteSchedule, checkSchedule, addDailyTodoLog } = require('../controller/calendarController');
+const { main, daily, addSchedule, deleteSchedule, checkSchedule, addDailyTodoLog, deleteDailyTodoLog } = require('../controller/calendarController');
 const router = express.Router();
 
 router.use(express.json());
@@ -23,6 +23,6 @@ router.put('/:pet_id/schedules', checkSchedule);
 router.post('/:pet_id/todos', addDailyTodoLog);
 
 // 하루 목표 미완료
-router.delete('/:pet_id/:date/todos', (req, res) => { res.send("하루목표 미완료") });
+router.delete('/:pet_id/todos', deleteDailyTodoLog);
 
 module.exports = router;
