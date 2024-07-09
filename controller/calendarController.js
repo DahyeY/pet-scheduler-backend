@@ -116,7 +116,7 @@ const daily = async (req, res) => {
     if (await checkOwnership(selected_pet_id, user_id)) {
         let response = { date: `${month}월 ${day}일` };
 
-        sql = `SELECT 
+        sql = `SELECT dt.id,
                     dt.title AS todo, 
                     dt.color, 
                     CASE
@@ -150,7 +150,7 @@ const daily = async (req, res) => {
             }
         )
 
-        sql = `SELECT title as schedule_title, completed FROM schedule WHERE pet_id = ? AND date = ?`;
+        sql = `SELECT id, title as schedule_title, completed FROM schedule WHERE pet_id = ? AND date = ?`;
         values = [selected_pet_id, date_string];
         conn.query(sql, values,
             (err, results) => {
@@ -176,9 +176,71 @@ const daily = async (req, res) => {
 
 }
 
+const addSchedule = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
 
+    const selected_pet_id = parseInt(req.params.pet_id);
+    const title = req.body.title;
+    const date = req.body.date;
+
+    if (await checkOwnership(selected_pet_id, user_id)) {
+
+        sql = `INSERT INTO schedule(title, date, pet_id) values (?, ?, ?)`;
+        let values = [title, date, selected_pet_id];
+        conn.query(sql, values,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+                else {
+                    return res.status(StatusCodes.CREATED).json(results);
+                }
+            }
+        )
+    }
+    else {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "로그인한 유저의 반려동물이 아닙니다."
+        });
+    }
+
+}
+
+const deleteSchedule = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
+
+    const selected_pet_id = parseInt(req.params.pet_id);
+    const { schedule_id } = req.body;
+
+    if (await checkOwnership(selected_pet_id, user_id)) {
+
+        sql = `DELETE FROM schedule WHERE id = ?`;
+        conn.query(sql, schedule_id,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+                else {
+                    return res.status(StatusCodes.NO_CONTENT).send();
+                }
+            }
+        )
+    }
+    else {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "로그인한 유저의 반려동물이 아닙니다."
+        });
+    }
+
+}
 
 module.exports = {
     main,
-    daily
+    daily,
+    addSchedule,
+    deleteSchedule
 };
