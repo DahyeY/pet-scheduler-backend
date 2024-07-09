@@ -238,9 +238,39 @@ const deleteSchedule = async (req, res) => {
 
 }
 
+const checkSchedule = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
+
+    const selected_pet_id = parseInt(req.params.pet_id);
+    const { schedule_id } = req.body;
+
+    if (await checkOwnership(selected_pet_id, user_id)) {
+
+        sql = `UPDATE schedule SET completed = NOT completed WHERE id = ?`;
+        conn.query(sql, schedule_id,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+                else {
+                    return res.status(StatusCodes.NO_CONTENT).send();
+                }
+            }
+        )
+    }
+    else {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            message: "로그인한 유저의 반려동물이 아닙니다."
+        });
+    }
+
+}
 module.exports = {
     main,
     daily,
     addSchedule,
-    deleteSchedule
+    deleteSchedule,
+    checkSchedule
 };

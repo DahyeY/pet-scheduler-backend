@@ -1,5 +1,5 @@
 const express = require('express');
-const { main, daily, addSchedule, deleteSchedule } = require('../controller/calendarController');
+const { main, daily, addSchedule, deleteSchedule, checkSchedule } = require('../controller/calendarController');
 const router = express.Router();
 
 router.use(express.json());
@@ -17,7 +17,7 @@ router.post('/:pet_id/schedules', addSchedule);
 router.delete('/:pet_id/schedules', deleteSchedule);
 
 // 일정 완료 체크
-router.put('/:pet_id/:date/schedules', (req, res) => { res.send("일정 체크") });
+router.put('/:pet_id/schedules', checkSchedule);
 
 // 하루 목표 완료
 router.post('/:pet_id/:date/todos', (req, res) => { res.send("하루목표 완료") });
