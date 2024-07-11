@@ -30,6 +30,7 @@ const join = (req, res) => {
 };
 
 const login = (req, res) => {
+    console.log('로그인');
     const { email, password } = req.body;
 
     let sql = 'SELECT * FROM user WHERE email = ?';
@@ -55,11 +56,24 @@ const login = (req, res) => {
                 });
 
                 res.cookie("token", token, {
-                    httpOnly: true
+                    httpOnly: true,
+                    sameSite: 'None',
+                    secure: true
+
                 });
                 console.log(token);
 
-                return res.status(StatusCodes.OK).json(results);
+                let sql = 'SELECT id FROM pet WHERE user_id = ?';
+                conn.query(sql, loginUser.id,
+                    (err, results) => {
+                        if (err) {
+                            console.log(err);
+                            return res.status(StatusCodes.BAD_REQUEST).end();
+                        }
+                        else if (results[0]) return res.status(StatusCodes.OK).json(results[0]);
+                        else return res.status(StatusCodes.OK).json({ mypage: 1 });
+                    })
+
             } else {
                 return res.status(StatusCodes.UNAUTHORIZED).end();
             }
@@ -70,6 +84,7 @@ const mypage = (req, res) => {
     const authorization = ensureAuthorization(req, res);
     const { id, name, email } = authorization;
     console.log("auth.id: ", id);
+    console.log("마이페이지 접속")
 
     let pets = {};
     let sql = 'SELECT pet.id as pet_id, pet.name as pet_name FROM pet WHERE pet.user_id = ?'
@@ -80,8 +95,6 @@ const mypage = (req, res) => {
                 return res.status(StatusCodes.BAD_REQUEST).end();
             }
 
-            console.log("results:", results);
-            console.log("pets:", pets);
             return res.status(StatusCodes.OK).json({
                 user_name: name,
                 email,
@@ -91,26 +104,6 @@ const mypage = (req, res) => {
     )
 
 
-
-    // let sql =
-    //     'SELECT name as user_name, email user where ';
-
-    // const salt = crypto.randomBytes(10).toString('base64');
-    // const hashPassword = crypto.pbkdf2Sync(password, salt, 10000, 10, 'sha512').toString('base64');
-
-    // let values = [name, email, password];
-    // conn.query(sql, values,
-    //     (err, results) => {
-    //         if (err) {
-    //             console.log(err);
-    //             return res.status(StatusCodes.BAD_REQUEST).end();
-    //         }
-
-    //         if (results.affectedRows)
-    //             return res.status(StatusCodes.CREATED).json(results);
-    //         else
-    //             return res.status(StatusCodes.BAD_REQUEST).end();
-    //     })
 };
 
 module.exports = {

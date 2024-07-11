@@ -36,7 +36,8 @@ const petInformation = async (req, res) => {
     const authorization = ensureAuthorization(req, res);
     const user_id = authorization.id;
 
-    const { pet_id } = req.body;
+    const pet_id = parseInt(req.params.pet_id);
+    console.log("정보페이지 : ", user_id, pet_id);
     if (await checkOwnership(pet_id, user_id)) {
         let response = {};
 
@@ -110,11 +111,32 @@ const addPet = async (req, res) => {
     )
 }
 
+const deletePet = async (req, res) => {
+    const authorization = ensureAuthorization(req, res);
+    const user_id = authorization.id;
+    const pet_id = parseInt(req.body.pet_id);
+    sql = 'DELETE FROM pet WHERE id = ? AND user_id = ?';
+    let values = [pet_id, user_id];
+    conn.query(sql, values,
+        (err, results) => {
+            if (err) {
+                console.log(err);
+                return res.status(StatusCodes.BAD_REQUEST).end();
+            }
+            else {
+                return res.status(StatusCodes.OK).json(results)
+            }
+        }
+    )
+}
+
 const addTodo = async (req, res) => {
     const authorization = ensureAuthorization(req, res);
     const user_id = authorization.id;
 
-    const { pet_id, title, color } = req.body;
+    const { title, color } = req.body;
+    const pet_id = parseInt(req.body.pet_id);
+
     if (await checkOwnership(pet_id, user_id)) {
         let sql = "INSERT INTO daily_todo(pet_id, title, color) VALUES (?, ?, ?)";
         let values = [pet_id, title, color];
@@ -131,6 +153,7 @@ const addTodo = async (req, res) => {
         )
     }
     else {
+        console.log("추가 오류");
         return res.status(StatusCodes.BAD_REQUEST).json({
             message: "로그인한 유저의 반려동물이 아닙니다."
         });
@@ -141,7 +164,8 @@ const deleteTodo = async (req, res) => {
     const authorization = ensureAuthorization(req, res);
     const user_id = authorization.id;
 
-    const { pet_id, todo_id } = req.body;
+    const { todo_id } = req.body;
+    const pet_id = parseInt(req.body.pet_id);
 
     if (await checkOwnership(pet_id, user_id)) {
         let sql = "DELETE FROM daily_todo WHERE id = ?";
@@ -169,6 +193,7 @@ const deleteTodo = async (req, res) => {
 module.exports = {
     petInformation,
     addPet,
+    deletePet,
     addTodo,
     deleteTodo
 };

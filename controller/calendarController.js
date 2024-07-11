@@ -33,6 +33,7 @@ const checkOwnership = async (pet_id, user_id) => {
 }
 
 const main = async (req, res) => {
+    console.log('메인페이지 접속');
     const authorization = ensureAuthorization(req, res);
     const user_id = authorization.id;
     const selected_pet_id = parseInt(req.params.pet_id);
@@ -41,7 +42,7 @@ const main = async (req, res) => {
     if (await checkOwnership(selected_pet_id, user_id)) {
         let response = { selected_pet_id };
 
-        sql = 'SELECT pet.name as name FROM pet WHERE pet.user_id  = ?'
+        sql = 'SELECT id, pet.name as name FROM pet WHERE pet.user_id  = ?'
         conn.query(sql, user_id,
             (err, results) => {
                 if (err) {
@@ -49,7 +50,7 @@ const main = async (req, res) => {
                     return res.status(StatusCodes.BAD_REQUEST).end();
                 }
                 else {
-                    response.pet = results;
+                    response.pets = results;
                     console.log(response);
                 }
             }
@@ -105,8 +106,8 @@ const daily = async (req, res) => {
     const authorization = ensureAuthorization(req, res);
     const user_id = authorization.id;
     const selected_pet_id = parseInt(req.params.pet_id);
-    const date_string = req.body.date;
-    const date = new Date(date_string);
+    const date_string = req.params.date;
+    const date = new Date(req.params.date);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -117,7 +118,7 @@ const daily = async (req, res) => {
         let response = { date: `${month}월 ${day}일` };
 
         sql = `SELECT dt.id,
-                    dt.title AS todo, 
+                    dt.title AS todo_title, 
                     dt.color, 
                     CASE
                         WHEN dt.id IN (
