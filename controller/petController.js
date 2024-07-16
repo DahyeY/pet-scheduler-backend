@@ -33,113 +33,76 @@ const checkOwnership = async (pet_id, user_id) => {
 }
 
 const petInformation = async (req, res) => {
-    const authorization = ensureAuthorization(req, res);
-    const user_id = authorization.id;
+    try {
+        const authorization = ensureAuthorization(req, res);
+        const user_id = authorization.id;
 
-    const pet_id = parseInt(req.params.pet_id);
-    console.log("정보페이지 : ", user_id, pet_id);
-    if (await checkOwnership(pet_id, user_id)) {
-        let response = {};
+        const pet_id = parseInt(req.params.pet_id);
+        console.log("정보페이지 : ", user_id, pet_id);
+        if (await checkOwnership(pet_id, user_id)) {
+            let response = {};
 
-        sql = 'SELECT pet.name as name FROM pet WHERE pet.id  = ?'
-        conn.query(sql, pet_id,
-            (err, results) => {
-                if (err) {
-                    console.log(err);
-                    return res.status(StatusCodes.BAD_REQUEST).end();
+            sql = 'SELECT pet.name as name FROM pet WHERE pet.id  = ?'
+            conn.query(sql, pet_id,
+                (err, results) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(StatusCodes.BAD_REQUEST).end();
+                    }
+                    else {
+
+                        response.name = results[0].name;
+                    }
                 }
-                else {
+            )
 
-                    response.name = results[0].name;
-                }
-            }
-        )
+            sql = 'SELECT id as todo_id, title, color FROM daily_todo WHERE pet_id  = ?'
+            conn.query(sql, pet_id,
+                (err, results) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(StatusCodes.BAD_REQUEST).end();
+                    }
+                    else {
 
-        sql = 'SELECT id as todo_id, title, color FROM daily_todo WHERE pet_id  = ?'
-        conn.query(sql, pet_id,
-            (err, results) => {
-                if (err) {
-                    console.log(err);
-                    return res.status(StatusCodes.BAD_REQUEST).end();
+                        response.daily_todo = results;
+                    }
                 }
-                else {
+            )
 
-                    response.daily_todo = results;
+            sql = 'SELECT id as schedule_id, title FROM schedule WHERE pet_id  = ?'
+            conn.query(sql, pet_id,
+                (err, results) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(StatusCodes.BAD_REQUEST).end();
+                    }
+                    else {
+                        response.schedule = results;
+                        return res.status(StatusCodes.OK).json(response);
+                    }
                 }
-            }
-        )
+            )
 
-        sql = 'SELECT id as schedule_id, title FROM schedule WHERE pet_id  = ?'
-        conn.query(sql, pet_id,
-            (err, results) => {
-                if (err) {
-                    console.log(err);
-                    return res.status(StatusCodes.BAD_REQUEST).end();
-                }
-                else {
-                    response.schedule = results;
-                    return res.status(StatusCodes.OK).json(response);
-                }
-            }
-        )
-
-    }
-    else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            message: "로그인한 유저의 반려동물이 아닙니다."
-        });
+        }
+        else {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "로그인한 유저의 반려동물이 아닙니다."
+            });
+        }
+    } catch (error) {
+        return res.status(StatusCodes.BAD_REQUEST).end();
     }
 
 }
 
 const addPet = async (req, res) => {
-    const authorization = ensureAuthorization(req, res);
-    const user_id = authorization.id;
-    const { name } = req.body;
-    sql = 'INSERT INTO pet(name, user_id) VALUES (?, ?)';
-    values = [name, user_id];
-    conn.query(sql, values,
-        (err, results) => {
-            if (err) {
-                console.log(err);
-                return res.status(StatusCodes.BAD_REQUEST).end();
-            }
-            else {
-                return res.status(StatusCodes.CREATED).json(results)
-            }
-        }
-    )
-}
-
-const deletePet = async (req, res) => {
-    const authorization = ensureAuthorization(req, res);
-    const user_id = authorization.id;
-    const pet_id = parseInt(req.body.pet_id);
-    sql = 'DELETE FROM pet WHERE id = ? AND user_id = ?';
-    let values = [pet_id, user_id];
-    conn.query(sql, values,
-        (err, results) => {
-            if (err) {
-                console.log(err);
-                return res.status(StatusCodes.BAD_REQUEST).end();
-            }
-            else {
-                return res.status(StatusCodes.OK).json(results)
-            }
-        }
-    )
-}
-
-const addTodo = async (req, res) => {
-    const authorization = ensureAuthorization(req, res);
-    const user_id = authorization.id;
-
-    const { title, color } = req.body;
-    const pet_id = parseInt(req.body.pet_id);
-
-    if (await checkOwnership(pet_id, user_id)) {
-        let sql = "INSERT INTO daily_todo(pet_id, title, color) VALUES (?, ?, ?)";
-        let values = [pet_id, title, color];
+    try {
+        const authorization = ensureAuthorization(req, res);
+        const user_id = authorization.id;
+        const { name } = req.body;
+        sql = 'INSERT INTO pet(name, user_id) VALUES (?, ?)';
+        values = [name, user_id];
         conn.query(sql, values,
             (err, results) => {
                 if (err) {
@@ -151,25 +114,20 @@ const addTodo = async (req, res) => {
                 }
             }
         )
-    }
-    else {
-        console.log("추가 오류");
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            message: "로그인한 유저의 반려동물이 아닙니다."
-        });
+    } catch (error) {
+        return res.status(StatusCodes.BAD_REQUEST).end();
     }
 }
 
-const deleteTodo = async (req, res) => {
-    const authorization = ensureAuthorization(req, res);
-    const user_id = authorization.id;
+const deletePet = async (req, res) => {
+    try {
 
-    const { todo_id } = req.body;
-    const pet_id = parseInt(req.body.pet_id);
-
-    if (await checkOwnership(pet_id, user_id)) {
-        let sql = "DELETE FROM daily_todo WHERE id = ?";
-        conn.query(sql, todo_id,
+        const authorization = ensureAuthorization(req, res);
+        const user_id = authorization.id;
+        const pet_id = parseInt(req.body.pet_id);
+        sql = 'DELETE FROM pet WHERE id = ? AND user_id = ?';
+        let values = [pet_id, user_id];
+        conn.query(sql, values,
             (err, results) => {
                 if (err) {
                     console.log(err);
@@ -180,11 +138,74 @@ const deleteTodo = async (req, res) => {
                 }
             }
         )
+    } catch (error) {
+        return res.status(StatusCodes.BAD_REQUEST).end();
     }
-    else {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            message: "로그인한 유저의 반려동물이 아닙니다."
-        });
+}
+
+const addTodo = async (req, res) => {
+    try {
+        const authorization = ensureAuthorization(req, res);
+        const user_id = authorization.id;
+
+        const { title, color } = req.body;
+        const pet_id = parseInt(req.body.pet_id);
+
+        if (await checkOwnership(pet_id, user_id)) {
+            let sql = "INSERT INTO daily_todo(pet_id, title, color) VALUES (?, ?, ?)";
+            let values = [pet_id, title, color];
+            conn.query(sql, values,
+                (err, results) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(StatusCodes.BAD_REQUEST).end();
+                    }
+                    else {
+                        return res.status(StatusCodes.CREATED).json(results)
+                    }
+                }
+            )
+        }
+        else {
+            console.log("추가 오류");
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "로그인한 유저의 반려동물이 아닙니다."
+            });
+        }
+    } catch (error) {
+        return res.status(StatusCodes.BAD_REQUEST).end();
+    }
+}
+
+const deleteTodo = async (req, res) => {
+    try {
+        const authorization = ensureAuthorization(req, res);
+        const user_id = authorization.id;
+
+        const { todo_id } = req.body;
+        const pet_id = parseInt(req.body.pet_id);
+
+        if (await checkOwnership(pet_id, user_id)) {
+            let sql = "DELETE FROM daily_todo WHERE id = ?";
+            conn.query(sql, todo_id,
+                (err, results) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(StatusCodes.BAD_REQUEST).end();
+                    }
+                    else {
+                        return res.status(StatusCodes.OK).json(results)
+                    }
+                }
+            )
+        }
+        else {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                message: "로그인한 유저의 반려동물이 아닙니다."
+            });
+        }
+    } catch (error) {
+        return res.status(StatusCodes.BAD_REQUEST).end();
     }
 }
 

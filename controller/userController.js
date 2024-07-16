@@ -84,29 +84,31 @@ const login = (req, res) => {
 };
 
 const mypage = (req, res) => {
-    const authorization = ensureAuthorization(req, res);
-    const { id, name, email } = authorization;
-    console.log("auth.id: ", id);
-    console.log("마이페이지 접속")
+    try {
+        const authorization = ensureAuthorization(req, res);
+        const { id, name, email } = authorization;
+        console.log("auth.id: ", id);
+        console.log("마이페이지 접속")
 
-    let pets = {};
-    let sql = 'SELECT pet.id as pet_id, pet.name as pet_name FROM pet WHERE pet.user_id = ?'
-    conn.query(sql, id,
-        (err, results) => {
-            if (err) {
-                console.log(err);
-                return res.status(StatusCodes.BAD_REQUEST).end();
+        let pets = {};
+        let sql = 'SELECT pet.id as pet_id, pet.name as pet_name FROM pet WHERE pet.user_id = ?'
+        conn.query(sql, id,
+            (err, results) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(StatusCodes.BAD_REQUEST).end();
+                }
+
+                return res.status(StatusCodes.OK).json({
+                    user_name: name,
+                    email,
+                    pets: results
+                });
             }
-
-            return res.status(StatusCodes.OK).json({
-                user_name: name,
-                email,
-                pets: results
-            });
-        }
-    )
-
-
+        )
+    } catch (error) {
+        return res.status(StatusCodes.BAD_REQUEST).end();
+    }
 };
 
 module.exports = {
