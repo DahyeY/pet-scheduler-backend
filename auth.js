@@ -4,12 +4,10 @@ dotenv.config();
 
 const ensureAuthorization = (req, res) => {
     try {
-        let receivedJwt = req.cookies.token;
-
+        let receivedJwt = req.headers.token;
         console.log("received jwt : ", receivedJwt);
 
         if (receivedJwt) {
-
             let decodedJwt = jwt.verify(receivedJwt, process.env.PRIVATE_KEY);
             console.log(decodedJwt);
             return decodedJwt;

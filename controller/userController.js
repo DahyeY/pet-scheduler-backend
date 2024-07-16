@@ -71,7 +71,7 @@ const login = (req, res) => {
                             return res.status(StatusCodes.BAD_REQUEST).end();
                         }
                         else if (results[0]) return res.status(StatusCodes.OK).json(results[0]);
-                        else return res.status(StatusCodes.OK).json({ mypage: 1 });
+                        else return res.status(StatusCodes.OK).json({ mypage: 1, token });
                     })
 
             } else {
