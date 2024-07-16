@@ -70,7 +70,10 @@ const login = (req, res) => {
                             console.log(err);
                             return res.status(StatusCodes.BAD_REQUEST).end();
                         }
-                        else if (results[0]) return res.status(StatusCodes.OK).json(results[0]);
+                        else if (results[0]) return res.status(StatusCodes.OK).json({
+                            id: results[0].id,
+                            token
+                        });
                         else return res.status(StatusCodes.OK).json({ mypage: 1, token });
                     })
 
